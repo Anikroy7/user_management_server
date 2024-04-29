@@ -6,10 +6,10 @@ const {
   getUserByEmailServices,
   getAllUsersServices,
 } = require("../services/user.service");
-const bcrypt = require("bcrypt");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const fs = require("fs");
+const { comparePassword } = require("../utils/helpers");
 
 exports.getAllUsers = async (req, res) => {
   try {
@@ -73,10 +73,7 @@ module.exports.loginUser = async (req, res) => {
   try {
     const user = await userLoginServices(req.body.email);
     if (user && user.length > 0) {
-      const isValidPassword = await bcrypt.compare(
-        req.body.password,
-        user[0].password
-      );
+      const isValidPassword = comparePassword(req.body.password, user[0].password)
 
       if (isValidPassword) {
         // IF Valid Password

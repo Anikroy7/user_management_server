@@ -16,14 +16,18 @@ router.route("/login").post(userController.loginUser);
 router.route("/all").get(verifyJwt, verifyAdmin, userController.getAllUsers);
 
 router
-  .route("/:email")
+  .route("/get/:email")
   .get(verifyJwt, adminOrUser, userController.getUserByEmail)
+router
+  .route('/edit/:email')
   .patch(
     verifyJwt,
     adminOrUser,
     uploader.single("photo"),
     userController.updateUser
   )
+router
+  .route('/delete/:email')
   .delete(verifyJwt, adminOrUser, userController.deleteUser);
 
 module.exports = router;

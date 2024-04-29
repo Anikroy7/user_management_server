@@ -1,7 +1,7 @@
 const User = require("../models/User");
 const fs = require("fs");
 const path = require("path");
-const bcrypt=require('bcrypt')
+const { hashedPassword } = require("../utils/helpers");
 
 exports.getAllUsersServices = async () => {
   const users = await User.find();
@@ -45,7 +45,7 @@ exports.updateUserServices = async (email, userData, file) => {
     ...userData,
   };
   if(userData.password){
-    newUser.password= await bcrypt.hash(userData.password, 10);
+    newUser.password= hashedPassword(userData.password, 10)
   }
   delete newUser.email;
   delete newUser._id;

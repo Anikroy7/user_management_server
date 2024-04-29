@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
+
+const { hashedPassword } = require("../utils/helpers");
 
 const userSchema = mongoose.Schema({
   name: {
@@ -77,8 +78,8 @@ userSchema.pre("save", async function (next) {
     if (!this.isModified("password")) {
       return next();
     }
-    const hashedPassword = await bcrypt.hash(this.password, 10);
-    this.password = hashedPassword;
+    const password = hashedPassword(this.password, 10);
+    this.password = password;
     next();
   } catch (error) {
     next(error);
