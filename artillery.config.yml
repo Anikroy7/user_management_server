@@ -1,0 +1,14 @@
+config:
+  target: 'http://localhost:5000'
+  phases:   
+    - name: 'warmup'
+      duration: 60
+      arrivalRate: 10
+
+scenarios:
+  - name: "Search for users"
+    flow:
+      - get:
+          url: "/api/v1/user/all?_start=0&limit=10" 
+          headers:
+            Authorization: "Beaerer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTcxNDQwNTU3MywiZXhwIjoxNzE0NDA5MTczfQ.wQGn-hfuwsLcTy6wj2_LUMa1LiRqbs07xId_P5fFTDo" 

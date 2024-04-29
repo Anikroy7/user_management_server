@@ -10,11 +10,18 @@ require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const { comparePassword } = require("../utils/helpers");
+const getOrSetCache = require("../cacheServices/getOrSetCache.service");
 
 exports.getAllUsers = async (req, res) => {
   try {
-
-    const users = await getAllUsersServices();
+    const { _start, _limit } = req.query;
+    const start = parseInt(_start, 10) || 0;
+    const limit = parseInt(_limit, 10) || 10;
+    const key = `users:_start=${start}&_limit=${limit}`
+    const users = await getOrSetCache(async () => {
+      const data = await getAllUsersServices(start, limit);
+      return data;
+    }, key);
     res.status(200).json({
       status: "success",
       data: users,
@@ -116,7 +123,7 @@ module.exports.loginUser = async (req, res) => {
 
 exports.getUserByEmail = async (req, res) => {
   try {
-    const email  = req.params.email;
+    const email = req.params.email;
     const user = await getUserByEmailServices(email);
     res.status(200).json({
       status: "success",

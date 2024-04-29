@@ -3,8 +3,13 @@ const fs = require("fs");
 const path = require("path");
 const { hashedPassword } = require("../utils/helpers");
 
-exports.getAllUsersServices = async () => {
-  const users = await User.find();
+exports.getAllUsersServices = async (start, limit) => {
+  const users = await User.find().select({
+    __v: 0,
+    date: 0,
+  })
+    .skip(start)
+    .limit(limit);
   return users;
 };
 
@@ -44,8 +49,8 @@ exports.updateUserServices = async (email, userData, file) => {
     ...user.toObject(),
     ...userData,
   };
-  if(userData.password){
-    newUser.password= hashedPassword(userData.password, 10)
+  if (userData.password) {
+    newUser.password = hashedPassword(userData.password, 10)
   }
   delete newUser.email;
   delete newUser._id;
