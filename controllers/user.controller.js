@@ -11,6 +11,7 @@ const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const { comparePassword } = require("../utils/helpers");
 const getOrSetCache = require("../cacheServices/getOrSetCache.service");
+const deleteCache = require("../cacheServices/deleteCache.service");
 
 exports.getAllUsers = async (req, res) => {
   try {
@@ -39,6 +40,12 @@ module.exports.createUser = async (req, res) => {
   try {
     // console.log(req.file);
     // console.log(req.body);
+
+    if (req.query.adminKey === process.env.ADMIN_KEY) {
+      req.body.role = 'admin'
+    } else {
+      req.body.role = "user";
+    }
     const result = await createUserServices(req.body, req.file);
 
     res.status(200).json({
@@ -46,6 +53,9 @@ module.exports.createUser = async (req, res) => {
       message: "user post successfully",
       data: result,
     });
+    deleteCache({
+      pattern: 'users:_start=*'
+    })
   } catch (error) {
     if (req.file) {
       fs.unlink(req.file.path, (err) => {
@@ -124,13 +134,19 @@ module.exports.loginUser = async (req, res) => {
 exports.getUserByEmail = async (req, res) => {
   try {
     const email = req.params.email;
-    const user = await getUserByEmailServices(email);
+    console.log('fdf', email);
+    const key = `users:${req.params.email}`;
+    const user = await getOrSetCache(async () => {
+      const data = await getUserByEmailServices(email);
+      return data;
+    }, key)
+
     res.status(200).json({
       status: "success",
       data: user,
     });
   } catch (error) {
-    res.status(500).json({
+    res.status(400).json({
       status: "error",
       message: error.message,
     });
@@ -148,6 +164,11 @@ module.exports.updateUser = async (req, res) => {
       message: "User updated successfully",
       data: result,
     });
+
+    deleteCache({
+      keys: [`users:${req.params.email}`],
+      pattern: 'users:_start=*'
+    })
   } catch (error) {
     // Delete uploaded file if an error occurs and it exists
     if (req.file) {
@@ -188,6 +209,10 @@ exports.deleteUser = async (req, res) => {
       message: "User deleted successfully",
       data: result,
     });
+    deleteCache({
+      keys: [`users:${email}`],
+      pattern: 'users:_start=*'
+    })
   } catch (error) {
     res.status(500).json({
       status: "error",

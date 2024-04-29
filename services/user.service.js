@@ -2,6 +2,7 @@ const User = require("../models/User");
 const fs = require("fs");
 const path = require("path");
 const { hashedPassword } = require("../utils/helpers");
+const { log } = require("console");
 
 exports.getAllUsersServices = async (start, limit) => {
   const users = await User.find().select({
@@ -14,7 +15,7 @@ exports.getAllUsersServices = async (start, limit) => {
 };
 
 exports.createUserServices = async (body, file) => {
-  const { name, email, password, address, image, phone } = body;
+  const { name, email, password, address, role, phone } = body;
   const photo = file?.filename || null;
   const newUser = new User({
     name,
@@ -23,6 +24,7 @@ exports.createUserServices = async (body, file) => {
     address,
     photo,
     phone,
+    role
   });
   const result = await User.create(newUser);
   return result;
@@ -90,6 +92,7 @@ exports.deleteUserServices = async (email) => {
 exports.getUserByEmailServices = async (email) => {
   // Find the user by email
   const user = await User.findOne({ email });
+  console.log('sdgad', user);
   if (!user) {
     throw new Error("User not found");
   }
