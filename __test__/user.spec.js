@@ -65,11 +65,11 @@ describe('getAllUsers API', () => {
 
     await getAllUsers(mockReq, mockRes);
 
-    expect(mockRes.status).toHaveBeenCalledWith(400); // Adjusted to expect 500 status code
+    expect(mockRes.status).toHaveBeenCalledWith(400); 
     expect(mockRes.json).toHaveBeenCalledWith({
       status: 'error',
       message: expect.any(String),
-      corelationId: "some-correlation-id", // Ensure corelationId is included in the response
+      corelationId: "some-correlation-id", 
     });
   });
 });

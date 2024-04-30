@@ -44,8 +44,6 @@ exports.updateUserServices = async (email, userData, file) => {
   }
   const previousImagePath = path.join("uploads", user.photo);
 
-
-  // return user
   const newUser = {
     ...user.toObject(),
     ...userData,

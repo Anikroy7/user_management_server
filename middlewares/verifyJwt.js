@@ -12,7 +12,7 @@ const verifyJwt = (req, res, next) => {
     req.user= user
     next();
   } catch (error) {
- 
+    logger.error(error);
     next({
       message: "Forbidden Accesss",
       status: "401",
