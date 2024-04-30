@@ -1,3 +1,4 @@
+const logger = require("../utils/logger");
 const redisClient = require("../utils/redisClient");
 
 const deletePattern = (pattern) => {
@@ -9,7 +10,7 @@ const deletePattern = (pattern) => {
             redisClient.del(...keys)
         }
     }).on('end', () => {
-        console.log('Cache data deleted')
+        logger.info('Failed to delete cache from redis server')
     })
 }
 

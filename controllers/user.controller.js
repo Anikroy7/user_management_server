@@ -16,7 +16,7 @@ const getOrSetCache = require("../cacheServices/getOrSetCache.service");
 const deleteCache = require("../cacheServices/deleteCache.service");
 
 exports.getAllUsers = async (req, res) => {
-  const corelationId = req.headers["x-co-relation-id"];
+  const corelationId = req.headers["x-co-relation-id"] || '';
   try {
     const { _start, _limit } = req.query;
     const start = parseInt(_start, 10) || 0;
@@ -24,14 +24,14 @@ exports.getAllUsers = async (req, res) => {
     const key = `users:_start=${start}&_limit=${limit}`;
     const users = await getOrSetCache(async () => {
       const data = await getAllUsersServices(start, limit);
-      return data;
+      return data || [];
     }, key);
     res.status(200).json({
       status: "success",
       data: users,
     });
   } catch (error) {
-    logger.info(error.message);
+    logger.error(error.message);
     res.status(400).json({
       status: "error",
       message: error.message,
@@ -41,7 +41,7 @@ exports.getAllUsers = async (req, res) => {
 };
 
 module.exports.createUser = async (req, res) => {
-  const corelationId = req.headers["x-co-relation-id"];
+  const corelationId = req.headers["x-co-relation-id"] || '';
   try {
     if (req.query.adminKey === process.env.ADMIN_KEY) {
       req.body.role = "admin";
@@ -91,8 +91,8 @@ module.exports.createUser = async (req, res) => {
 };
 
 module.exports.loginUser = async (req, res) => {
+  const corelationId = req.headers["x-co-relation-id"];
   try {
-    const corelationId = req.headers["x-co-relation-id"];
     const user = await userLoginServices(req.body.email);
     if (user && user.length > 0) {
       const isValidPassword = comparePassword(
@@ -127,7 +127,7 @@ module.exports.loginUser = async (req, res) => {
         });
       }
     } else {
-      logger.info(`Invalid crediantial!!. co-relation-id: ${setCorelationId}`);
+      logger.info(`Invalid crediantial!!. co-relation-id: ${corelationId}`);
       res.status(403).json({
         status: "failed",
         message: "Authentication failed!",

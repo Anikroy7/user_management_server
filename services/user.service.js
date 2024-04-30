@@ -2,7 +2,6 @@ const User = require("../models/User");
 const fs = require("fs");
 const path = require("path");
 const { hashedPassword } = require("../utils/helpers");
-const { log } = require("console");
 
 exports.getAllUsersServices = async (start, limit) => {
   const users = await User.find().select({
