@@ -7,6 +7,7 @@ const adminOrUser = require("../middlewares/adminOrUser");
 
 const router = express.Router();
 
+
 router
   .route("/signup")
   .post(uploader.single("photo"), userController.createUser);

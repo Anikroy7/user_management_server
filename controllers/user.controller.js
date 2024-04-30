@@ -10,15 +10,18 @@ require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const { comparePassword } = require("../utils/helpers");
+const logger = require("../utils/logger");
+const setCorelationId = require("../middlewares/setConRelationId");
 const getOrSetCache = require("../cacheServices/getOrSetCache.service");
 const deleteCache = require("../cacheServices/deleteCache.service");
 
 exports.getAllUsers = async (req, res) => {
+  const corelationId = req.headers["x-co-relation-id"];
   try {
     const { _start, _limit } = req.query;
     const start = parseInt(_start, 10) || 0;
     const limit = parseInt(_limit, 10) || 10;
-    const key = `users:_start=${start}&_limit=${limit}`
+    const key = `users:_start=${start}&_limit=${limit}`;
     const users = await getOrSetCache(async () => {
       const data = await getAllUsersServices(start, limit);
       return data;
@@ -28,21 +31,20 @@ exports.getAllUsers = async (req, res) => {
       data: users,
     });
   } catch (error) {
-    res.status(500).json({
+    logger.info(error.message);
+    res.status(400).json({
       status: "error",
       message: error.message,
+      corelationId,
     });
   }
 };
 
-
 module.exports.createUser = async (req, res) => {
+  const corelationId = req.headers["x-co-relation-id"];
   try {
-    // console.log(req.file);
-    // console.log(req.body);
-
     if (req.query.adminKey === process.env.ADMIN_KEY) {
-      req.body.role = 'admin'
+      req.body.role = "admin";
     } else {
       req.body.role = "user";
     }
@@ -54,8 +56,8 @@ module.exports.createUser = async (req, res) => {
       data: result,
     });
     deleteCache({
-      pattern: 'users:_start=*'
-    })
+      pattern: "users:_start=*",
+    });
   } catch (error) {
     if (req.file) {
       fs.unlink(req.file.path, (err) => {
@@ -69,28 +71,34 @@ module.exports.createUser = async (req, res) => {
       for (let field in error.errors) {
         errors[field] = error.errors[field].message;
       }
+      logger.error(errors);
       return res.status(400).json({
         status: "Failed",
         message: "User validation failed",
         errors: errors,
+        corelationId,
       });
     } else {
+      logger.error(error.message);
       return res.status(500).json({
         status: "Failed",
         message: "Internal server error",
         error: error.message,
+        corelationId,
       });
     }
   }
 };
 
 module.exports.loginUser = async (req, res) => {
-  // res.send("hitted");
-
   try {
+    const corelationId = req.headers["x-co-relation-id"];
     const user = await userLoginServices(req.body.email);
     if (user && user.length > 0) {
-      const isValidPassword = comparePassword(req.body.password, user[0].password)
+      const isValidPassword = comparePassword(
+        req.body.password,
+        user[0].password
+      );
 
       if (isValidPassword) {
         // IF Valid Password
@@ -111,50 +119,59 @@ module.exports.loginUser = async (req, res) => {
           data: user,
         });
       } else {
+        logger.info(`Invalid crediantial!!`);
         res.status(403).json({
           status: "failed",
           message: "Authentication failed!",
+          corelationId,
         });
       }
     } else {
+      logger.info(`Invalid crediantial!!. co-relation-id: ${setCorelationId}`);
       res.status(403).json({
         status: "failed",
         message: "Authentication failed!",
+        corelationId,
       });
     }
   } catch (error) {
+    logger.error(error);
     res.status(403).json({
       status: "failed",
       message: "Failed to login",
       error: error.message,
+      corelationId,
     });
   }
 };
 
 exports.getUserByEmail = async (req, res) => {
+  const corelationId = req.headers["x-co-relation-id"];
   try {
     const email = req.params.email;
-    console.log('fdf', email);
+    console.log("fdf", email);
     const key = `users:${req.params.email}`;
     const user = await getOrSetCache(async () => {
       const data = await getUserByEmailServices(email);
       return data;
-    }, key)
+    }, key);
 
     res.status(200).json({
       status: "success",
       data: user,
     });
   } catch (error) {
+    logger.error(error);
     res.status(400).json({
       status: "error",
       message: error.message,
+      corelationId,
     });
   }
 };
 
-
 module.exports.updateUser = async (req, res) => {
+  const corelationId = req.headers["x-co-relation-id"];
   try {
     const { email } = req.params;
     const result = await updateUserServices(email, req.body, req.file);
@@ -167,8 +184,8 @@ module.exports.updateUser = async (req, res) => {
 
     deleteCache({
       keys: [`users:${req.params.email}`],
-      pattern: 'users:_start=*'
-    })
+      pattern: "users:_start=*",
+    });
   } catch (error) {
     // Delete uploaded file if an error occurs and it exists
     if (req.file) {
@@ -184,22 +201,27 @@ module.exports.updateUser = async (req, res) => {
       for (let field in error.errors) {
         errors[field] = error.errors[field].message;
       }
+      logger.error(errors);
       return res.status(400).json({
         status: "Failed",
         message: "User validation failed",
         errors: errors,
+        corelationId,
       });
     } else {
+      logger.error(error.message);
       return res.status(400).json({
         status: "Failed",
         message: "Failed to update user!",
         error: error.message,
+        corelationId,
       });
     }
   }
 };
 
 exports.deleteUser = async (req, res) => {
+  const corelationId = req.headers["x-co-relation-id"];
   try {
     const { email } = req.params;
 
@@ -211,13 +233,14 @@ exports.deleteUser = async (req, res) => {
     });
     deleteCache({
       keys: [`users:${email}`],
-      pattern: 'users:_start=*'
-    })
+      pattern: "users:_start=*",
+    });
   } catch (error) {
+    logger.error(error);
     res.status(500).json({
       status: "error",
       message: error.message,
+      corelationId,
     });
   }
 };
-

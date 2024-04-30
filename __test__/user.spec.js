@@ -9,7 +9,7 @@ const {
   createUserServices,
 } = require("../services/user.service");
 
-const path = require('path'); 
+const path = require('path');
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const fs = require("fs");
@@ -25,8 +25,8 @@ describe('getAllUsers API', () => {
   test('should return status 200 and users data on success', async () => {
     const mockReq = {
       query: {
-        _start: 0, // Add the _start parameter
-        _limit: 10, // Add the _limit parameter
+        _start: 0, 
+        _limit: 10, 
       }
     };
     const mockRes = {
@@ -39,13 +39,13 @@ describe('getAllUsers API', () => {
     expect(mockRes.status).toHaveBeenCalledWith(200);
     expect(mockRes.json).toHaveBeenCalledWith({
       status: 'success',
-      data: expect.any(Array), // Ensure data is an array or customize as per your response
+      data: expect.any(Array), 
     });
   });
 
   test('should return status 500 and error message on failure', async () => {
     const mockReq = {
-     
+
     };
     const mockRes = {
       status: jest.fn().mockReturnThis(),
@@ -57,7 +57,7 @@ describe('getAllUsers API', () => {
     expect(mockRes.status).toHaveBeenCalledWith(500);
     expect(mockRes.json).toHaveBeenCalledWith({
       status: 'error',
-      message: expect.any(String), // Ensure error message is provided
+      message: expect.any(String), 
     });
   });
 });
@@ -75,6 +75,7 @@ describe("createUser API", () => {
         role: "test",
       },
       file: { path: "mock/file/path" },
+      query: {}
     };
     const mockRes = {
       status: jest.fn().mockReturnThis(),
@@ -143,7 +144,7 @@ describe("loginUser", () => {
     ];
     userLoginServices.mockResolvedValueOnce(mockUser);
     jwt.sign.mockReturnValueOnce("mockToken");
-    comparePassword.mockReturnValueOnce(false); 
+    comparePassword.mockReturnValueOnce(false);
 
     await loginUser(mockReq, mockRes);
 

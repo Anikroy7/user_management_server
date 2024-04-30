@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const logger = require("../utils/logger");
 
 const verifyJwt = (req, res, next) => {
   try {
@@ -6,14 +7,14 @@ const verifyJwt = (req, res, next) => {
     const token = authorization.split(" ")[1];
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN);
     const { email, role } = decoded;
-    console.log(email, role);
+
     const user= {email, role}
     req.user= user
     next();
   } catch (error) {
-    console.log(error);
+ 
     next({
-      message: "Forbidden Accesssf",
+      message: "Forbidden Accesss",
       status: "401",
     });
   }
